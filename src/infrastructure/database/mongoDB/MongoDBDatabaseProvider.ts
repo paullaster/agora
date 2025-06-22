@@ -3,7 +3,6 @@ import type { IDatabaseProvider } from '../../../core/providers/IDatabaseProvide
 import type { Connection } from 'mongoose';
 import config from '../../config/index.ts';
 import {
-    model,
     // Connection,
     // connection as mongooseConnection,
     createConnection as mongooseConnection,
@@ -28,7 +27,7 @@ export class MongoDBDatabaseProvider implements IDatabaseProvider {
         try {
             conn = await mongooseConnection(connectionUrl, {
                 maxPoolSize: 50,
-                serverSelectionTimeoutMS: 10000,
+                serverSelectionTimeoutMS: 10000000,
                 socketTimeoutMS: 45000,
             }).asPromise();
             if (conn.readyState !== 1) {
@@ -46,7 +45,7 @@ export class MongoDBDatabaseProvider implements IDatabaseProvider {
             if (conn.models[name]) {
                 models[name] = conn.models[name];
             } else {
-                models[name] = model(name, schema);
+                models[name] = conn.model(name, schema);
             }
         }
         return new MongoDBDatabaseProvider(conn, models);

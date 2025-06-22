@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/**
- * Returns a deep copy of the object with all specified translation fields replaced by the requested language.
- * Falls back to the fallback language if the requested translation is missing.
- */
 export function getTranslation<T extends Record<string, any>>(
     obj: T,
     fields: (keyof T)[],
@@ -20,9 +16,6 @@ export function getTranslation<T extends Record<string, any>>(
     return result;
 }
 
-/**
- * Recursively translates all fields in an object that match the Translation type.
- */
 export function deepTranslate(obj: any, lang: string = 'en', fallback: string = 'en'): any {
     if (obj && typeof obj === 'object') {
         if ('en' in obj && 'fr' in obj) {
@@ -37,10 +30,6 @@ export function deepTranslate(obj: any, lang: string = 'en', fallback: string = 
     return obj;
 }
 
-/**
- * Utility to negotiate language from Accept-Language header or query param.
- * Returns 'fr' if French is preferred, otherwise 'en'.
- */
 export function negotiateLanguage(header?: string, queryLang?: string): 'en' | 'fr' {
     if (queryLang && ['en', 'fr'].includes(queryLang)) return queryLang as 'en' | 'fr';
     if (!header) return 'en';

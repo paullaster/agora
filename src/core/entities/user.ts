@@ -9,7 +9,8 @@ export class User {
     public avatar: string | null;
     public password: string;
     public lastLogin: Date | null;
-    constructor(id: string | null, name: string, email: string, avatar: string | null, password: string, lastLogin: Date | null) {
+    public role: string;
+    constructor(id: string | null, name: string, email: string, avatar: string | null, password: string, lastLogin: Date | null, role = 'user') {
         if (!name || !email || !password) {
             throw new InValidData('invalid user data');
         }
@@ -19,6 +20,7 @@ export class User {
         this.avatar = avatar;
         this.password = password;
         this.lastLogin = lastLogin;
+        this.role = role;
     }
     static async createFromModel(model: Document & IUser): Promise<User> {
         return new User(
@@ -27,11 +29,12 @@ export class User {
             model.email,
             model.avatar ?? null,
             model.password,
-            model.lastLogin ?? null
+            model.lastLogin ?? null,
+            model.role,
         );
     }
-    static async createFromRawObject({ name, email, avatar, password, lastLogin }: IUser): Promise<User> {
-        return new User(null, name, email, avatar ?? null, password, lastLogin ?? null);
+    static async createFromRawObject({ name, email, avatar, password, lastLogin, role }: IUser): Promise<User> {
+        return new User(null, name, email, avatar ?? null, password, lastLogin ?? null, role);
     }
     public toPersistenceObject() {
         return {
@@ -40,6 +43,7 @@ export class User {
             avatar: this.avatar,
             password: this.password,
             lastLogin: this.lastLogin,
+            role: this.role,
         };
     }
     public updateLastLogin(date: Date = new Date()) {
@@ -52,6 +56,7 @@ export class User {
             email: user.email,
             avatar: user.avatar,
             lastLogin: user.lastLogin,
+            role: user.role,
         };
     }
 }

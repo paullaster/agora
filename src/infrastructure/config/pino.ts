@@ -7,15 +7,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __rootdir = dirname(dirname(dirname(dirname(__filename))));
 
 
-// ensure log directory exist
 const ensureLogdir = async (dir: string) => {
     try {
-        // Check directory exists
         await stat(dir);
 
     } catch (err: unknown) {
         if (typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === 'ENOENT') {
-            // Create directory
             await mkdir(dir, { recursive: true });
         } else {
             throw err;

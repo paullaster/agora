@@ -13,6 +13,7 @@ export interface IUser {
     avatar?: string;
     password: string;
     lastLogin: Date;
+    role: string;
 }
 export interface Translation {
     en: string;
@@ -65,4 +66,5 @@ export interface UserDTO {
     email: string;
     avatar: string | null;
     lastLogin: Date | null;
+    role: string;
 }

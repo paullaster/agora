@@ -7,5 +7,6 @@ export const User = new Schema<IUser>({
     email: { type: String, required: true },
     avatar: String,
     lastLogin: { type: Date },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    role: String,
 });

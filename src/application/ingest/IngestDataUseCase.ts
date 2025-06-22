@@ -2,7 +2,7 @@
 import { parse as csvParse } from 'csv-parse/sync';
 import streamJson from 'stream-json';
 import StreamArray from 'stream-json/streamers/StreamArray.js';
-import { Writable } from 'node:stream';
+import { Writable, Readable } from 'node:stream';
 import { readFile, writeFile } from 'fs/promises';
 import type { ILoggingProvider } from '../../core/providers/ILoggingProvider.ts';
 import { AppError } from '../../core/entities/error.ts';
@@ -41,12 +41,11 @@ export class IngestDataUseCase {
             this.logger.error('Parsed data is not an array', { dataType });
             throw new AppError('Parsed data is not an array');
         }
-        const repo = this.repositories[dataType];
+        const repo = this.repositories[dataType].repo;
         if (!repo || typeof repo.saveBulk !== 'function') {
             this.logger.error('No repository found for dataType', { dataType });
             throw new AppError('No repository found for dataType');
         }
-        // Validate translations for product ingestion
         if (dataType === 'products') {
             for (const record of records) {
                 if (!record.description || typeof record.description !== 'object' || !record.description.en || !record.description.fr) {
@@ -55,14 +54,25 @@ export class IngestDataUseCase {
                 }
             }
         }
-        const result = await repo.saveBulk(records);
+        const result = await repo.saveBulk(await Promise.all(records.map(async dto => await this.repositories[dataType].entity.createFromRawObject(dto))));
         this.logger.log('Bulk insert successful', { dataType, count: records.length });
         return { inserted: records.length, result };
     }
 
     private async handleFaqs(fileBuffer: Buffer, faqsMode: 'append' | 'overwrite') {
-        const newFaqs = await this.parseJsonStream(fileBuffer);
-        if (!Array.isArray(newFaqs)) throw new AppError('FAQs data must be an array');
+        this.logger.log('FAQ upload buffer', { length: fileBuffer.length, sample: fileBuffer.toString('utf8', 0, 200) });
+        let newFaqs: any[] = [];
+        const isLikelyCsv = fileBuffer.slice(0, 200).toString().includes(',') && !fileBuffer.slice(0, 200).toString().trim().startsWith('[');
+        if (isLikelyCsv) {
+            newFaqs = csvParse(fileBuffer.toString(), { columns: true, skip_empty_lines: true });
+            this.logger.log('Parsed CSV FAQs', { count: newFaqs.length, sample: newFaqs.slice(0, 2) });
+        } else {
+            newFaqs = await this.parseJsonStream(fileBuffer);
+            this.logger.log('Parsed JSON FAQs', { count: Array.isArray(newFaqs) ? newFaqs.length : 0, sample: newFaqs.slice(0, 2) });
+        }
+        if (!Array.isArray(newFaqs) || newFaqs.length === 0 || newFaqs.every(item => item === null)) {
+            throw new AppError('FAQs data must be a non-empty array');
+        }
         let faqs: any[] = [];
         if (faqsMode === 'append') {
             try {
@@ -77,11 +87,16 @@ export class IngestDataUseCase {
                     throw e;
                 }
             }
-            faqs = faqs.concat(newFaqs);
+            faqs = faqs.concat(newFaqs.filter(Boolean));
         } else {
-            faqs = newFaqs;
+            faqs = newFaqs.filter(Boolean);
         }
-        await writeFile(this.faqsFilePath, JSON.stringify(faqs, null, 2));
+        try {
+            await writeFile(this.faqsFilePath, JSON.stringify(faqs, null, 2));
+        } catch (e) {
+            this.logger.error('Failed to write FAQs file', { error: e, path: this.faqsFilePath });
+            throw e;
+        }
         this.logger.log('FAQs file updated', { faqsMode, count: faqs.length });
         return { faqsCount: faqs.length };
     }
@@ -96,12 +111,12 @@ export class IngestDataUseCase {
                     cb();
                 }
             });
-            const pipeline = streamJson.parser()
+            Readable.from(fileBuffer)
+                .pipe(streamJson.parser())
                 .pipe(StreamArray.streamArray())
-                .pipe(readable);
-            pipeline.on('finish', () => resolve(records));
-            pipeline.on('error', (err: Error) => reject(err));
-            pipeline.end(fileBuffer);
+                .pipe(readable)
+                .on('finish', () => resolve(records))
+                .on('error', (err: Error) => reject(err));
         });
     }
 }

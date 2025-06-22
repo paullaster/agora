@@ -74,7 +74,7 @@ export class MongoDBUserRepository implements IUserRepository {
                 const bulk = users.map(u => u.toPersistenceObject());
                 savedDocs = await this.userModel.insertMany(bulk, { session });
             });
-            return Promise.all(savedDocs.map(doc => User.createFromModel(doc)));
+            return await Promise.all(savedDocs.map(doc => User.createFromModel(doc)));
         } finally {
             session.endSession();
         }

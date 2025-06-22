@@ -11,4 +11,4 @@ const schemas = {
     Blog: Blog,
 };
 
-export const mongoDBProvider = MongoDBDatabaseProvider.create(schemas);
+export const mongoDBProvider = await MongoDBDatabaseProvider.create(schemas);
