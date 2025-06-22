@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "noEmit": true, // Optional - see note below
+        "noEmit": true,
         "target": "esnext",
         "module": "nodenext",
         "rewriteRelativeImportExtensions": true,
@@ -23,6 +23,7 @@
         "allowSyntheticDefaultImports": true,
         "moduleResolution": "nodenext",
         "moduleDetection": "auto",
+        "isolatedModules": true,
         "types": [
             "node",
             "jest",
@@ -31,13 +32,7 @@
         "noUnusedParameters": true,
         "noUnusedLocals": true,
         "composite": true,
-        "baseUrl": "./src",
-        "paths": {
-            "*": [
-                "node_modules/*",
-                "src/types/*"
-            ]
-        }
+        "baseUrl": "./src"
     },
     "include": [
         "src/**/*"

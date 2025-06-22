@@ -62,6 +62,20 @@ export class MongoDBOutletRepository implements IOutletRepository {
         }
     }
 
+    async saveBulk(outlets: Outlet[]): Promise<Outlet[]> {
+        const session = await this.client.startSession();
+        try {
+            let savedDocs: (Document & IOutlet)[] = [];
+            await session.withTransaction(async () => {
+                const bulk = outlets.map(o => o.toPersistenceObject());
+                savedDocs = await this.outletModel.insertMany(bulk, { session });
+            });
+            return Promise.all(savedDocs.map(doc => Outlet.createFromModel(doc)));
+        } finally {
+            session.endSession();
+        }
+    }
+
     async delete(id: string): Promise<boolean> {
         const session = await this.client.startSession();
         try {

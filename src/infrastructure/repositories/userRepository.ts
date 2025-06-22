@@ -66,6 +66,20 @@ export class MongoDBUserRepository implements IUserRepository {
         }
     }
 
+    async saveBulk(users: User[]): Promise<User[]> {
+        const session = await this.client.startSession();
+        try {
+            let savedDocs: any[] = [];
+            await session.withTransaction(async () => {
+                const bulk = users.map(u => u.toPersistenceObject());
+                savedDocs = await this.userModel.insertMany(bulk, { session });
+            });
+            return Promise.all(savedDocs.map(doc => User.createFromModel(doc)));
+        } finally {
+            session.endSession();
+        }
+    }
+
     async delete(id: string): Promise<boolean> {
         const session = await this.client.startSession();
         try {

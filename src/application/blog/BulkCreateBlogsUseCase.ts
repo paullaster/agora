@@ -1,0 +1,12 @@
+import type { IBlogRepository } from '../../core/repositories/interfaces.ts';
+import type { Blog } from '../../core/entities/blog.ts';
+
+export class BulkCreateBlogsUseCase {
+    private blogRepository: IBlogRepository;
+    constructor(blogRepository: IBlogRepository) {
+        this.blogRepository = blogRepository;
+    }
+    async execute(blogs: Blog[]) {
+        return await this.blogRepository.saveBulk(blogs);
+    }
+}

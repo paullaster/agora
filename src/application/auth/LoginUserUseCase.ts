@@ -21,7 +21,6 @@ export class LoginUserUseCase {
         // Update last login
         user.updateLastLogin();
         await this.userRepository.save(user);
-        // Generate JWT with jti
         const jti = randomUUID();
         const token = jwt.sign({ id: user.id, email: user.email, jti }, this.jwtSecret, { expiresIn: '1h' });
         return { user: user.toSafeObject(user), token };

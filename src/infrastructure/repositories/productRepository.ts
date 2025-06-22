@@ -64,6 +64,20 @@ export class MongoDBProductRepository implements IProductRepository {
         }
     }
 
+    async saveBulk(products: Product[]): Promise<Product[]> {
+        const session = await this.client.startSession();
+        try {
+            let savedDocs: (Document & IProduct)[] = [];
+            await session.withTransaction(async () => {
+                const bulk = products.map(p => p.toPersistenceObject());
+                savedDocs = await this.productModel.insertMany(bulk, { session });
+            });
+            return Promise.all(savedDocs.map(doc => Product.creatFromModel(doc)));
+        } finally {
+            session.endSession();
+        }
+    }
+
     async delete(id: string): Promise<boolean> {
         const session = await this.client.startSession();
         try {

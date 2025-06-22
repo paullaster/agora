@@ -8,6 +8,7 @@ export interface IProductRepository {
     findById(id: string): Promise<Product | null>;
     findAll(query: QueryInterace): Promise<Product[]>;
     save(product: Product): Promise<Product>;
+    saveBulk(products: Product[]): Promise<Product[]>;
     delete(id: string): Promise<boolean>;
 }
 
@@ -15,6 +16,7 @@ export interface IUserRepository {
     findById(id: string): Promise<User | null>;
     findAll(query: QueryInterace): Promise<User[]>;
     save(user: User): Promise<User>;
+    saveBulk(users: User[]): Promise<User[]>;
     delete(id: string): Promise<boolean>;
 }
 
@@ -22,6 +24,7 @@ export interface IOutletRepository {
     findById(id: string): Promise<Outlet | null>;
     findAll(query: QueryInterace): Promise<Outlet[]>;
     save(outlet: Outlet): Promise<Outlet>;
+    saveBulk(outlets: Outlet[]): Promise<Outlet[]>;
     delete(id: string): Promise<boolean>;
 }
 
@@ -29,5 +32,6 @@ export interface IBlogRepository {
     findById(id: string): Promise<Blog | null>;
     findAll(query: QueryInterace): Promise<Blog[]>;
     save(blog: Blog): Promise<Blog>;
+    saveBulk(blogs: Blog[]): Promise<Blog[]>;
     delete(id: string): Promise<boolean>;
 }

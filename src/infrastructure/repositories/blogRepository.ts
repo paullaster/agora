@@ -62,6 +62,20 @@ export class MongoDBBlogRepository implements IBlogRepository {
         }
     }
 
+    async saveBulk(blogs: Blog[]): Promise<Blog[]> {
+        const session = await this.client.startSession();
+        try {
+            let savedDocs: (Document & IBlogPost)[] = [];
+            await session.withTransaction(async () => {
+                const bulk = blogs.map(b => b.toPersistenceObject());
+                savedDocs = await this.blogModel.insertMany(bulk, { session });
+            });
+            return Promise.all(savedDocs.map(doc => Blog.createFromModel(doc)));
+        } finally {
+            session.endSession();
+        }
+    }
+
     async delete(id: string): Promise<boolean> {
         const session = await this.client.startSession();
         try {
