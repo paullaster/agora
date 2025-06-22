@@ -14,16 +14,21 @@ export interface IUser {
     password: string;
     lastLogin: Date;
 }
+export interface Translation {
+    en: string;
+    fr: string;
+}
+
 export interface IProduct {
-    _id?: string
-    name: string
-    category: string
-    certification: string
-    nutritionalBenefits: string[]
-    image: string
-    price: string
-    rating: number
-    description: string
+    _id?: string;
+    name: string;
+    category: string;
+    certification: string;
+    nutritionalBenefits: string[];
+    image: string;
+    price: string;
+    rating: number;
+    description: Translation;
 }
 export interface IOutlet {
     _id?: string;

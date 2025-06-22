@@ -11,7 +11,7 @@ export class Product {
     public image: string;
     public price: string;
     public rating: number;
-    public description: string
+    public description: { en: string; fr: string };
     constructor(product: IProduct) {
         if (
             !product.name ||

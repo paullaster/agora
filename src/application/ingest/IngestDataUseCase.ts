@@ -46,6 +46,15 @@ export class IngestDataUseCase {
             this.logger.error('No repository found for dataType', { dataType });
             throw new AppError('No repository found for dataType');
         }
+        // Validate translations for product ingestion
+        if (dataType === 'products') {
+            for (const record of records) {
+                if (!record.description || typeof record.description !== 'object' || !record.description.en || !record.description.fr) {
+                    this.logger.error('Missing English or French description in product ingestion', { record });
+                    throw new AppError('Each product must have both English and French descriptions');
+                }
+            }
+        }
         const result = await repo.saveBulk(records);
         this.logger.log('Bulk insert successful', { dataType, count: records.length });
         return { inserted: records.length, result };
