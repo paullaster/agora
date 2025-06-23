@@ -4,9 +4,10 @@ import { TokenBlacklistService } from '../../infrastructure/services/TokenBlackl
 import { PinoLogger } from '../../infrastructure/logger/pinoLogger.ts';
 import { DashboardController } from '../controllers/dashboardController.ts';
 import { requireRole } from '../middleware/requireRole.ts';
+import config from '../../infrastructure/config/index.ts';
 
 const logger = new PinoLogger('auth');
-const jwtSecret = process.env.JWT_SECRET || 'unique:secret:agro:ecology:app:2025-paullaster';
+const jwtSecret = config.app.key;
 const tokenBlacklistService = await TokenBlacklistService.init(logger);
 
 const router = Router({ mergeParams: true, caseSensitive: true });

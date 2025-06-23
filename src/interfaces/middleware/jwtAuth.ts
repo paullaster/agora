@@ -27,7 +27,6 @@ export function jwtBlacklistCheckMiddleware(tokenBlacklistService: TokenBlacklis
         const decoded = jwt.decode(token) as { jti?: string };
         if (!decoded || !decoded.jti) return res.ApiResponse?.error(401, 'Invalid token');
         const isBlacklisted = await tokenBlacklistService.isTokenBlacklisted(decoded.jti);
-        tokenBlacklistService.destroyRedisClient();
         if (isBlacklisted) return res.ApiResponse?.error(401, 'Token is blacklisted')
         next();
     };

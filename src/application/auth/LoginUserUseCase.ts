@@ -21,7 +21,7 @@ export class LoginUserUseCase {
         user.updateLastLogin();
         await this.userRepository.save(user);
         const jti = randomUUID();
-        const token = jwt.sign({ id: user.id, email: user.email, jti }, this.jwtSecret, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, email: user.email, jti, role: user.role }, this.jwtSecret, { expiresIn: '1h' });
         return { user: user.toSafeObject(user), token };
     }
 }

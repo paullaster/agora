@@ -5,6 +5,7 @@ const app = {
     environment: process.env.APP_ENV as Environment || 'development',
     timezon: process.env.APP_TZ,
     port: process.env.APP_PORT || 4200,
+    key: process.env.JWT_SECRET || 'unique:secret:agro:ecology:app:2025-paullaster',
 }
 
 export default app;

@@ -15,7 +15,6 @@ export class LogoutUserUseCase {
         const expiresInSeconds = decoded.exp - Math.floor(Date.now() / 1000);
         if (expiresInSeconds > 0) {
             await this.tokenBlacklistService.blacklistToken(decoded.jti, expiresInSeconds);
-            this.tokenBlacklistService.destroyRedisClient();
         }
         return { message: 'Logged out' };
     }

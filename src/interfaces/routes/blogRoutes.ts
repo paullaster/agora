@@ -8,9 +8,10 @@ import { mongoDBProvider } from '../../infrastructure/database/index.ts';
 import { jwtVerifyMiddleware, jwtBlacklistCheckMiddleware } from '../middleware/jwtAuth.ts';
 import { TokenBlacklistService } from '../../infrastructure/services/TokenBlacklistService.ts';
 import { PinoLogger } from '../../infrastructure/logger/pinoLogger.ts';
+import config from '../../infrastructure/config/index.ts';
 
 const logger = new PinoLogger('auth');
-const jwtSecret = process.env.JWT_SECRET || 'unique:secret:agro:ecology:app:2025-paullaster';
+const jwtSecret = config.app.key;
 const tokenBlacklistService = await TokenBlacklistService.init(logger);
 
 const blogRepository = new MongoDBBlogRepository(mongoDBProvider.connection, mongoDBProvider.models.Blog);
