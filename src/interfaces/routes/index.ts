@@ -17,7 +17,7 @@ export const setRoutes = (app: Application): void => {
     router.use('/outlets', outletRoutes);
     router.use('/blogs', blogRoutes);
     router.use('/auth', authRoutes);
-    router.use('/protected', protectedRoutes);
+    router.use('/dashboard', protectedRoutes);
     router.use('/faqs', faqRoutes);
     router.use('/ingest', ingestRoutes);
 };

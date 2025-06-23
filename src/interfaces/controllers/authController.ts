@@ -29,6 +29,7 @@ export class AuthController {
             this.logger.log('User login successful', { username });
             res.ApiResponse?.success(result, 200, 'Login successful');
         } catch (error) {
+            console.log(error.message, error.stack)
             this.logger.error('Login failed', { error });
             next(error);
         }

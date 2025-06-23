@@ -20,7 +20,7 @@ router.get('/profile',
     }
 );
 
-router.get('/dashboard',
+router.get('/',
     jwtVerifyMiddleware(jwtSecret),
     jwtBlacklistCheckMiddleware(tokenBlacklistService),
     requireRole('admin'),

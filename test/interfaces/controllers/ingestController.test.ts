@@ -16,24 +16,28 @@ const logger: ILoggingProvider = {
 const executeMock: jest.MockedFunction<IngestDataUseCase['execute']> = jest.fn();
 const ingestDataUseCase: IngestDataUseCase = { execute: executeMock } as unknown as IngestDataUseCase;
 
-// Setup Express app for testing
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+    res.ApiResponse = {
+        success(data?: unknown, status = 200, message = 'OK') {
+            res.status(status).json({ success: true, message, data });
+        },
+        error(status = 500, message = 'Error') {
+            res.status(status).json({ success: false, message });
+        },
+    };
+    next();
+});
+
 const controller = new IngestController(ingestDataUseCase, logger);
 app.post('/ingest', uploadMiddleware.single('file'), (req, res, next) => controller.ingest(req, res, next));
 
-beforeAll(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (express.response as any).ApiResponse = {
-        success(this: express.Response, data?: unknown, status = 200, message = 'OK') {
-            this.status(status).json({ success: true, message, data });
-        },
-        error(this: express.Response, status = 500, message = 'Error') {
-            this.status(status).json({ success: false, message });
-        },
-    };
+// Add error handler middleware at the end
+app.use((err, req, res, next) => {
+    res.status(500).json({ success: false, message: err.message });
 });
 
 describe('IngestController', () => {

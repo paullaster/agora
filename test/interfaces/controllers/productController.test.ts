@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, test, expect, jest } from '@jest/globals';
 import request from 'supertest';
-import express, { Response } from 'express';
+import express from 'express';
 import { ProductController } from '../../../src/interfaces/controllers/productController';
 import type { CreateProductUseCase } from '../../../src/application/product/CreateProductUseCase';
 import type { GetProductDetailsUseCase } from '../../../src/application/product/GetProductDetailsUseCase';
@@ -23,15 +22,16 @@ const controller = new ProductController(listProductsUseCase, getProductDetailsU
 const app = express();
 app.use(express.json());
 
-beforeAll(() => {
-    (express.response as Response & { ApiResponse?: any }).ApiResponse = {
-        success(this: Response, data?: unknown, status = 200, message = 'OK') {
-            this.status(status).json({ success: true, message, data });
+app.use((req, res, next) => {
+    res.ApiResponse = {
+        success(data?: unknown, status = 200, message = 'OK') {
+            res.status(status).json({ success: true, message, data });
         },
-        error(this: Response, status = 500, message = 'Error') {
-            this.status(status).json({ success: false, message });
+        error(status = 500, message = 'Error') {
+            res.status(status).json({ success: false, message });
         },
     };
+    next();
 });
 
 app.get('/products', (req, res, next) => controller.list(req, res, next));
@@ -39,7 +39,6 @@ app.get('/products/:id', (req, res, next) => controller.details(req, res, next))
 app.post('/products', (req, res, next) => controller.create(req, res, next));
 
 const mockProductData: IProduct = {
-    _id: '1',
     name: 'Test Product',
     category: 'Fruit',
     certification: 'Organic',
@@ -47,10 +46,13 @@ const mockProductData: IProduct = {
     image: 'test.jpg',
     price: '10.00',
     rating: 5,
-    description: 'A test product',
+    description: {
+        en: 'A test product',
+        fr: 'Un produit test'
+    },
 };
 
-const mockProduct = new Product(mockProductData);
+const mockProduct = await Product.createFromRawObject(mockProductData);
 
 describe('ProductController', () => {
     afterEach(() => {
@@ -62,7 +64,18 @@ describe('ProductController', () => {
         const res = await request(app).get('/products');
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.data).toEqual([mockProduct]);
+        expect(res.body.data).toEqual([
+            {
+                category: "Fruit",
+                certification: "Organic",
+                description: "A test product",
+                image: "test.jpg",
+                name: "Test Product",
+                nutritionalBenefits: ["Vitamin C"],
+                price: "10.00",
+                rating: 5,
+            }
+        ]);
     });
 
     test('should get product details', async () => {
@@ -70,7 +83,16 @@ describe('ProductController', () => {
         const res = await request(app).get('/products/1');
         expect(res.status).toBe(200);
         expect(res.body.success).toBe(true);
-        expect(res.body.data).toEqual(mockProduct);
+        expect(res.body.data).toEqual({
+            category: "Fruit",
+            certification: "Organic",
+            description: "A test product",
+            image: "test.jpg",
+            name: "Test Product",
+            nutritionalBenefits: ["Vitamin C"],
+            price: "10.00",
+            rating: 5,
+        });
     });
 
     test('should return 404 if product not found', async () => {
@@ -84,7 +106,11 @@ describe('ProductController', () => {
     test('should return 400 if product data is invalid', async () => {
         createProductMock.mockImplementationOnce(() => { throw new Error('Invalid product'); });
         const res = await request(app).post('/products').send({ name: '' });
-        expect(res.status).toBe(500);
+        expect(res.status).toBe(400);
         expect(res.body.success).toBe(false);
     });
+});
+
+app.use((err, req, res, next) => {
+    res.status(err.status || 500).json({ success: false, message: err.message });
 });

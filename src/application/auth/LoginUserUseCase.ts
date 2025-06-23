@@ -11,14 +11,13 @@ export class LoginUserUseCase {
         this.jwtSecret = jwtSecret;
     }
     async execute(email: string, password: string) {
-        // Find user by email
+        console.log('usecase: ', JSON.stringify({ email, password }))
         const users = await this.userRepository.findAll({ email });
         const user = users[0];
         if (!user) throw new InValidData('Invalid credentials');
         // I did not hash passord for this interview project bacause I did not have enough time to handle creation of users.
         // I will enable ingestion of user using a json file and they will have a plain unhashed passwords hence this
         if (user.password !== password) throw new InValidData('Invalid credentials');
-        // Update last login
         user.updateLastLogin();
         await this.userRepository.save(user);
         const jti = randomUUID();
