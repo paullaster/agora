@@ -6,6 +6,7 @@ export class GetUserDetailsUseCase {
         this.userRepository = userRepository;
     }
     async execute(id: string) {
-        return await this.userRepository.findById(id);
+        const user = await this.userRepository.findById(id)
+        return user?.toSafeObject(user);
     }
 }
